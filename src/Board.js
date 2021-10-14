@@ -28,26 +28,29 @@ import "./Board.css";
  **/
 
 function Board({ nrows, ncols, chanceLightStartsOn }) {
-  const [board, setBoard] = useState(createBoard());
+  const [board, setBoard] = useState(createBoard);
   
   /** create a board nrows high/ncols wide, each cell randomly lit or unlit */
   function createBoard() {
     // let initialBoard = [];
     // TODO: DONE create array-of-arrays of true/false values
-    let initialBoard = Array.from({length: nrows}, () => 
+    const initialBoard = Array.from({length: nrows}, () => 
       Array.from({length: ncols}, () => 
-      Math.random() > chanceLightStartsOn ? false : true));
+      Math.random() < chanceLightStartsOn));  // instead of checking if it's greater than chanceLightStartsOn
 
     return initialBoard;
   }
 
   function hasWon() {
     // TODO: DONE check the board in state to determine whether the player has won.
-    for (let row of board){
-      if (row.includes(true)) return false;
-    }
-    return true;
+    return board.every(row=>row.every(cell=>!cell));  // use every operator for shorter syntax
+    // for (let row of board){
+    //   if (row.includes(true)) return false;  //.every to check if all is false
+    // }
+    // return true;
   }
+  const won = hasWon();
+
 
   function flipCellsAround(coord) {
     setBoard(oldBoard => {
@@ -62,20 +65,37 @@ function Board({ nrows, ncols, chanceLightStartsOn }) {
       };
 
       // TODO: Make a (deep) copy of the oldBoard
+      let newBoard = oldBoard.map(row=>row.map(cell=>cell));
 
       // TODO: in the copy, flip this cell and the cells around it
-
+      flipCell(y,x, newBoard);
+      flipCell(y-1,x, newBoard);
+      flipCell(y+1,x, newBoard);
+      flipCell(y,x+1, newBoard);
+      flipCell(y,x-1, newBoard);
+     
       // TODO: return the copy
+      return newBoard;
     });
   }
 
   // if the game is won, just show a winning msg & render nothing else
-
-  // TODO
-
   // make table board
 
-  // TODO
+  if (won) return <p> "You won!"</p> ;
+  return (
+    <table>
+      {board.map((row,y)=>{
+          return (
+          <tr>
+            {row.map((col,x)=>{
+              return <Cell isLit={col} flipCellsAroundMe={flipCellsAround.bind(null, `${y}-${x}`)}/>
+            })}
+          </tr>
+        )}
+      )}
+  </table>
+  );
 }
 
 export default Board;
